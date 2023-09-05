@@ -13,23 +13,18 @@ import (
 type Handler struct {
 }
 
-var coreV1Types = []string{
-	"pods", "services", "secrets", "configmaps", "endpoints",
-	"events", "namespaces", "nodes", "pvcs", "pvs", "replicacontrollers", "serviceaccounts",
-}
+var (
+	coreV1Types = []string{
+		"pods", "services", "secrets", "configmaps", "endpoints",
+		"events", "namespaces", "nodes", "pvcs", "pvs", "replicacontrollers", "serviceaccounts",
+	}
 
+	appsV1Types = []string{"deploys", "daemonsets", "statefulsets", "replicasets"}
+)
+
+// MakeHTTPHandler registers endpoints for k8s GVKs.
 func MakeHTTPHandler(ctx context.Context, client *k8s.Client) http.Handler {
 	r := mux.NewRouter()
-
-	r.Methods("GET").Path("/deploys").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		deploys, err := client.Deploys(ctx, "tyk", v1.ListOptions{})
-		if err != nil {
-			errorHandler(w, err)
-		}
-
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		json.NewEncoder(w).Encode(deploys)
-	})
 
 	for _, coreV1Type := range coreV1Types {
 		r.Methods("GET").
@@ -37,18 +32,36 @@ func MakeHTTPHandler(ctx context.Context, client *k8s.Client) http.Handler {
 			HandlerFunc(registerListCoreV1Handlers(ctx, client, coreV1Type))
 	}
 
+	for _, appsV1Type := range appsV1Types {
+		r.Methods("GET").
+			Path(fmt.Sprintf("/%s", appsV1Type)).
+			HandlerFunc(registerAppsV1Handlers(ctx, client, appsV1Type))
+	}
+
 	return r
 }
 
-func registerListCoreV1Handlers(ctx context.Context, cl *k8s.Client, resource string) func(w http.ResponseWriter, r *http.Request) {
+func registerAppsV1Handlers(ctx context.Context, cl *k8s.Client, resource string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		pods, err := cl.ListCoreV1(ctx, "tyk", resource, v1.ListOptions{})
+		resources, err := cl.ListAppsV1(ctx, "tyk", resource, v1.ListOptions{})
 		if err != nil {
 			errorHandler(w, err)
 		}
 
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		json.NewEncoder(w).Encode(pods)
+		json.NewEncoder(w).Encode(resources)
+	}
+}
+
+func registerListCoreV1Handlers(ctx context.Context, cl *k8s.Client, resource string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		resources, err := cl.ListCoreV1(ctx, "tyk", resource, v1.ListOptions{})
+		if err != nil {
+			errorHandler(w, err)
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		json.NewEncoder(w).Encode(resources)
 	}
 }
 
