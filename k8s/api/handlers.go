@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/buraksekili/tykstation/k8s"
 	"github.com/gorilla/mux"
@@ -28,13 +29,13 @@ func MakeHTTPHandler(ctx context.Context, client *k8s.Client) http.Handler {
 
 	for _, coreV1Type := range coreV1Types {
 		r.Methods("GET").
-			Path(fmt.Sprintf("/%s", coreV1Type)).
+			Path(fmt.Sprintf("/corev1/{namespace}/%s", coreV1Type)).
 			HandlerFunc(registerListCoreV1Handlers(ctx, client, coreV1Type))
 	}
 
 	for _, appsV1Type := range appsV1Types {
 		r.Methods("GET").
-			Path(fmt.Sprintf("/%s", appsV1Type)).
+			Path(fmt.Sprintf("/appsv1/{namespace}/%s", appsV1Type)).
 			HandlerFunc(registerAppsV1Handlers(ctx, client, appsV1Type))
 	}
 
@@ -43,7 +44,13 @@ func MakeHTTPHandler(ctx context.Context, client *k8s.Client) http.Handler {
 
 func registerAppsV1Handlers(ctx context.Context, cl *k8s.Client, resource string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		resources, err := cl.ListAppsV1(ctx, "tyk", resource, v1.ListOptions{})
+		vars := mux.Vars(r)
+		namespace, ok := vars["namespace"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+		}
+
+		resources, err := cl.ListAppsV1(ctx, namespace, resource, v1.ListOptions{})
 		if err != nil {
 			errorHandler(w, err)
 		}
@@ -55,7 +62,13 @@ func registerAppsV1Handlers(ctx context.Context, cl *k8s.Client, resource string
 
 func registerListCoreV1Handlers(ctx context.Context, cl *k8s.Client, resource string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		resources, err := cl.ListCoreV1(ctx, "tyk", resource, v1.ListOptions{})
+		vars := mux.Vars(r)
+		namespace, ok := vars["namespace"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+		}
+
+		resources, err := cl.ListCoreV1(ctx, namespace, resource, v1.ListOptions{})
 		if err != nil {
 			errorHandler(w, err)
 		}
