@@ -24,7 +24,10 @@ func MakeHTTPHandler(ctx context.Context, client *client.Client) http.Handler {
 		HandlerFunc(logsHandler(ctx, client))
 
 	r.Methods("GET").Path("/crds").HandlerFunc(registerCRDsHandler(ctx, client))
-	r.Methods("GET").Path("/crs").HandlerFunc(registerCRsHandler(ctx, client))
+
+	r.Methods("GET").
+		Path("/crs/{group}/{version}/{resource}/{namespace}/{name}").
+		HandlerFunc(registerCRsHandler(ctx, client))
 
 	// Core V1 types
 	for _, coreV1Type := range coreV1Types {

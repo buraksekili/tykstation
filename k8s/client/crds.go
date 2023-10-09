@@ -23,14 +23,7 @@ func (c *Client) GetCRs(ctx context.Context, ns, name, group, version, resource 
 		return nil, nil
 	}
 
-	group = "tyk.tyk.io"
-	version = "v1alpha1"
-	resource = "apidefinitions"
-
 	var gvr = schema.GroupVersionResource{
-		//Group:    "mongodbcommunity.mongodb.com",
-		//Version:  "v1",
-		//Resource: "mongodbcommunity",
 		Group:    group,
 		Version:  version,
 		Resource: resource,

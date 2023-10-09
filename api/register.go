@@ -14,12 +14,43 @@ import (
 
 func registerCRsHandler(ctx context.Context, c *client.Client) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		crds, err := c.GetCRs(ctx, "default", "httpbin", "", "", "")
+		vars := mux.Vars(r)
+		group, ok := vars["group"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+			return
+		}
+
+		version, ok := vars["version"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+			return
+		}
+
+		resource, ok := vars["resource"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+			return
+		}
+
+		ns, ok := vars["namespace"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+			return
+		}
+
+		name, ok := vars["name"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+			return
+		}
+
+		crs, err := c.GetCRs(ctx, ns, name, group, version, resource)
 		if err != nil {
 			errorHandler(w, err)
 		}
 
-		json.NewEncoder(w).Encode(crds)
+		json.NewEncoder(w).Encode(crs)
 	}
 }
 
