@@ -13,8 +13,8 @@ type Client struct {
 	kubeconfig string
 	restConfig *rest.Config
 
-	ClientSet     *kubernetes.Clientset
-	crdClientSet  *clientset.Clientset
+	clientSet    *kubernetes.Clientset
+	crdClientSet *clientset.Clientset
 	dynamicClient *dynamic.DynamicClient
 }
 
@@ -54,7 +54,7 @@ func K8sClient(kubeconfig string) (*Client, error) {
 		return nil, err
 	}
 
-	cl.ClientSet = cs
+	cl.clientSet = cs
 	cl.crdClientSet = crdClientSet
 	cl.dynamicClient = dynClient
 

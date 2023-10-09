@@ -19,7 +19,7 @@ func (c *Client) GetCRDs(ctx context.Context, gvk string) (interface{}, error) {
 }
 
 func (c *Client) GetCRs(ctx context.Context, ns, name, group, version, resource string) (interface{}, error) {
-	if c.ClientSet == nil {
+	if c.clientSet == nil {
 		return nil, nil
 	}
 

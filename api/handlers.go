@@ -2,13 +2,10 @@ package api
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/buraksekili/tykstation/k8s/client"
 	"github.com/gorilla/mux"
 	"helm.sh/helm/v3/pkg/time"
-	"io"
-	corev1 "k8s.io/api/core/v1"
 	"net/http"
 )
 
@@ -67,35 +64,35 @@ func MakeHTTPHandler(ctx context.Context, client *client.Client) http.Handler {
 
 func logsHandler(ctx context.Context, client *client.Client) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
+		//vars := mux.Vars(r)
 
-		defer func() {
-			fmt.Println("finished totally\n")
-		}()
-
-		namespace, namespaceExists := vars["namespace"]
-		if !namespaceExists {
-			errorHandler(w, errors.New("invalid request path"))
-			return
-		}
-
-		name, nameExists := vars["name"]
-		if !nameExists {
-			errorHandler(w, errors.New("invalid request path"))
-			return
-		}
+		//defer func() {
+		//	fmt.Println("finished totally\n")
+		//}()
+		//
+		//namespace, namespaceExists := vars["namespace"]
+		//if !namespaceExists {
+		//	errorHandler(w, errors.New("invalid request path"))
+		//	return
+		//}
+		//
+		//name, nameExists := vars["name"]
+		//if !nameExists {
+		//	errorHandler(w, errors.New("invalid request path"))
+		//	return
+		//}
 
 		now := time.Now()
 
 		yesterday := now.AddDate(0, 0, -1)
 		fmt.Println(yesterday.String())
-		u := now.Unix()
+		//u := now.Unix()
 
-		logStreamReq := client.ClientSet.CoreV1().Pods(namespace).GetLogs(name, &corev1.PodLogOptions{Follow: true, SinceSeconds: &u})
-		rc, _ := logStreamReq.Stream(ctx)
+		//logStreamReq := client.clientSet.CoreV1().Pods(namespace).GetLogs(name, &corev1.PodLogOptions{Follow: true, SinceSeconds: &u})
+		//rc, _ := logStreamReq.Stream(ctx)
 		//scanner := bufio.NewScanner(rc)
 
-		io.Copy(w, rc)
+		//io.Copy(w, rc)
 
 		//for scanner.Scan() {
 		//	line := scanner.Text() + "\n"

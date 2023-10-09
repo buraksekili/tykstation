@@ -14,7 +14,7 @@ import (
 func (c *Client) Logs(ctx context.Context, name, namespace string, plo v1.PodLogOptions) (io.ReadCloser, error) {
 	plo = v1.PodLogOptions{}
 
-	logStream, err := c.ClientSet.CoreV1().Pods(namespace).GetLogs(name, &plo).Stream(ctx)
+	logStream, err := c.clientSet.CoreV1().Pods(namespace).GetLogs(name, &plo).Stream(ctx)
 	if err != nil {
 		fmt.Printf("ERR: %v", err)
 		return nil, err
