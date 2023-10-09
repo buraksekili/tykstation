@@ -28,8 +28,7 @@ func MakeHTTPHandler(ctx context.Context, client *client.Client) http.Handler {
 		r.Methods("GET").
 			Path(fmt.Sprintf("/corev1/{namespace}/%s", coreV1Type)).
 			HandlerFunc(registerListCoreV1Handlers(ctx, client, coreV1Type))
-	}
-	for _, coreV1Type := range coreV1Types {
+
 		r.Methods("GET").
 			Path(fmt.Sprintf("/corev1/{namespace}/%s/{name}", coreV1Type)).
 			HandlerFunc(registerGetCoreV1Handlers(ctx, client, coreV1Type))
@@ -40,9 +39,7 @@ func MakeHTTPHandler(ctx context.Context, client *client.Client) http.Handler {
 		r.Methods("GET").
 			Path(fmt.Sprintf("/appsv1/{namespace}/%s", appsV1Type)).
 			HandlerFunc(registerListAppsV1Handlers(ctx, client, appsV1Type))
-	}
 
-	for _, appsV1Type := range appsV1Types {
 		r.Methods("GET").
 			Path(fmt.Sprintf("/appsv1/{namespace}/%s/{name}", appsV1Type)).
 			HandlerFunc(registerGetAppsV1Handlers(ctx, client, appsV1Type))
