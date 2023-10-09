@@ -20,8 +20,13 @@ func MakeHTTPHandler(ctx context.Context, client *client.Client) http.Handler {
 		Path("/logs/{namespace}/{name}").
 		HandlerFunc(logsHandler(ctx, client))
 
-	r.Methods("GET").Path("/crds").HandlerFunc(registerCRDsHandler(ctx, client))
+	// CRDs
+	r.Methods("GET").Path("/crds").HandlerFunc(registerListCRDsHandler(ctx, client))
+	r.Methods("GET").
+		Path("/crds/{group}/{resource}").
+		HandlerFunc(registerGetCRDHandler(ctx, client))
 
+	// CRs
 	r.Methods("GET").
 		Path("/crs/{group}/{version}/{resource}/{namespace}/{name}").
 		HandlerFunc(registerGetCRHandler(ctx, client))

@@ -94,14 +94,41 @@ func registerGetCRsHandler(ctx context.Context, c *client.Client) func(http.Resp
 	}
 }
 
-func registerCRDsHandler(ctx context.Context, c *client.Client) func(http.ResponseWriter, *http.Request) {
+func registerListCRDsHandler(ctx context.Context, c *client.Client) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		crds, err := c.GetCRDs(ctx)
+		crds, err := c.ListCRD(ctx)
 		if err != nil {
 			errorHandler(w, err)
+			return
 		}
 
 		json.NewEncoder(w).Encode(crds)
+	}
+}
+
+func registerGetCRDHandler(ctx context.Context, c *client.Client) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		group, ok := vars["group"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+			return
+		}
+
+		resource, ok := vars["resource"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+			return
+		}
+
+		crd, err := c.GetCRD(ctx, fmt.Sprintf("%s.%s", resource, group))
+		if err != nil {
+			errorHandler(w, err)
+			return
+		}
+
+		json.NewEncoder(w).Encode(crd)
 	}
 }
 

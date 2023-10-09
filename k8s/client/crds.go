@@ -6,7 +6,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func (c *Client) GetCRDs(ctx context.Context) (interface{}, error) {
+func (c *Client) ListCRD(ctx context.Context) (interface{}, error) {
 	crds, err := c.crdClientSet.
 		ApiextensionsV1().
 		CustomResourceDefinitions().
@@ -16,6 +16,22 @@ func (c *Client) GetCRDs(ctx context.Context) (interface{}, error) {
 	}
 
 	return crds, err
+}
+
+// GetCRD gets the detail of CustomResourceDefinition specified by given name. The name MUST be in the format
+// <.spec.name>.<.spec.group>. See following for the doc:
+//
+//	https://github.com/kubernetes/apiextensions-apiserver/blob/ee7666a3e09f4241647a3cafa0c64fbc5ee8dc99/pkg/apis/apiextensions/v1/types.go#L359-L360
+func (c *Client) GetCRD(ctx context.Context, name string) (interface{}, error) {
+	crd, err := c.crdClientSet.
+		ApiextensionsV1().
+		CustomResourceDefinitions().
+		Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return crd, err
 }
 
 func (c *Client) GetCR(ctx context.Context, ns, name string, gvr schema.GroupVersionResource) (interface{}, error) {
