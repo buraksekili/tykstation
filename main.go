@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/buraksekili/tykstation/k8s"
-	"github.com/buraksekili/tykstation/k8s/api"
+	"github.com/buraksekili/tykstation/api"
+	"github.com/buraksekili/tykstation/k8s/client"
 	"k8s.io/client-go/tools/clientcmd"
 	"net/http"
 	"os"
@@ -15,7 +15,7 @@ import (
 func main() {
 	kubeconfig := clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
 
-	cl, err := k8s.K8sClient(kubeconfig)
+	cl, err := client.K8sClient(kubeconfig)
 	if err != nil {
 		panic(err)
 	}
@@ -37,3 +37,16 @@ func main() {
 	fmt.Printf("ERROR: %v", <-errs)
 
 }
+
+//func getClientset() (*kubernetes.Clientset, error) {
+//	config, err := rest.InClusterConfig()
+//	if err != nil {
+//		kubeconfig :=
+//			clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
+//		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+//		if err != nil {
+//			return nil, err
+//		}
+//	}
+//	return kubernetes.NewForConfig(config)
+//}

@@ -1,4 +1,4 @@
-package k8s
+package client
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ type Client struct {
 }
 
 // K8sClient returns a new Client to interact with Kubernetes, based on the provided kubeconfig.
-// If the kubeconfig is an empty string, it uses in-cluter configuration.
+// If the kubeconfig is an empty string, it uses in-cluster configuration.
 func K8sClient(kubeconfig string) (*Client, error) {
 	cl := &Client{kubeconfig: kubeconfig}
 
