@@ -6,7 +6,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func (c *Client) GetCRDs(ctx context.Context, gvk string) (interface{}, error) {
+func (c *Client) GetCRDs(ctx context.Context) (interface{}, error) {
 	crds, err := c.crdClientSet.
 		ApiextensionsV1().
 		CustomResourceDefinitions().

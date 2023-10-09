@@ -56,7 +56,7 @@ func registerCRsHandler(ctx context.Context, c *client.Client) func(http.Respons
 
 func registerCRDsHandler(ctx context.Context, c *client.Client) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		crds, err := c.GetCRDs(ctx, "")
+		crds, err := c.GetCRDs(ctx)
 		if err != nil {
 			errorHandler(w, err)
 		}
