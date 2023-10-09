@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/buraksekili/tykstation/k8s/client"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 )
@@ -29,6 +31,58 @@ func registerGetAppsV1Handlers(ctx context.Context, cl *client.Client, appsV1Typ
 		}
 
 		json.NewEncoder(w).Encode(appsV1Resource)
+	}
+}
+
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		// You can customize this function to check the origin of the request
+		return true
+	},
+}
+
+// TODO: handle connection terminations.
+func registerWatchAppsV1Handlers(ctx context.Context, cl *client.Client, appsV1Type string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("registering watch")
+
+		vars := mux.Vars(r)
+		namespace, ok := vars["namespace"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+		}
+
+		fmt.Println("namespace", namespace)
+
+		watchInterface, err := cl.WatchAppsV1(ctx, namespace, appsV1Type, v1.ListOptions{})
+		if err != nil {
+			errorHandler(w, err)
+		}
+
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			errorHandler(w, err)
+			fmt.Println("failed to upgrade", err)
+			return
+		}
+		defer conn.Close()
+
+		for update := range watchInterface.ResultChan() {
+			fmt.Println("writing update")
+			err := conn.WriteJSON(update)
+			if err != nil {
+				fmt.Println("failed to write update")
+				errorHandler(w, err)
+				return
+			}
+			fmt.Println("!WORKED")
+
+			fmt.Printf(
+				"Watch Event: %s %s\n",
+				update.Type, update.Object.GetObjectKind().GroupVersionKind().Kind,
+			)
+		}
+		fmt.Println("finished")
 	}
 }
 
@@ -88,4 +142,50 @@ func registerListCoreV1Handlers(ctx context.Context, cl *client.Client, resource
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		json.NewEncoder(w).Encode(resources)
 	}
+}
+
+// TODO: handle connection terminations.
+func registerWatchCoreV1Handlers(ctx context.Context, cl *client.Client, appsV1Type string) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("registering watch")
+
+		vars := mux.Vars(r)
+		namespace, ok := vars["namespace"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+		}
+
+		fmt.Println("namespace", namespace)
+
+		watchInterface, err := cl.WatchCoreV1(ctx, namespace, appsV1Type, v1.ListOptions{})
+		if err != nil {
+			errorHandler(w, err)
+		}
+
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			errorHandler(w, err)
+			fmt.Println("failed to upgrade", err)
+			return
+		}
+		defer conn.Close()
+
+		for update := range watchInterface.ResultChan() {
+			fmt.Println("writing update")
+			err := conn.WriteJSON(update)
+			if err != nil {
+				fmt.Println("failed to write update")
+				errorHandler(w, err)
+				return
+			}
+			fmt.Println("!WORKED")
+
+			fmt.Printf(
+				"Watch Event: %s %s\n",
+				update.Type, update.Object.GetObjectKind().GroupVersionKind().Kind,
+			)
+		}
+		fmt.Println("finished")
+	}
+
 }

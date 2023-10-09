@@ -25,24 +25,37 @@ func MakeHTTPHandler(ctx context.Context, client *client.Client) http.Handler {
 
 	// Core V1 types
 	for _, coreV1Type := range coreV1Types {
-		r.Methods("GET").
-			Path(fmt.Sprintf("/corev1/{namespace}/%s", coreV1Type)).
-			HandlerFunc(registerListCoreV1Handlers(ctx, client, coreV1Type))
+		func(t string, router *mux.Router) {
+			router.Methods("GET").
+				Path(fmt.Sprintf("/corev1/{namespace}/%s", t)).
+				HandlerFunc(registerListCoreV1Handlers(ctx, client, t))
 
-		r.Methods("GET").
-			Path(fmt.Sprintf("/corev1/{namespace}/%s/{name}", coreV1Type)).
-			HandlerFunc(registerGetCoreV1Handlers(ctx, client, coreV1Type))
+			router.Methods("GET").
+				Path(fmt.Sprintf("/corev1/{namespace}/%s/{name}", t)).
+				HandlerFunc(registerGetCoreV1Handlers(ctx, client, t))
+
+			router.
+				Path(fmt.Sprintf("/watch/corev1/{namespace}/%s", t)).
+				HandlerFunc(registerWatchCoreV1Handlers(ctx, client, t))
+		}(coreV1Type, r)
 	}
 
 	// Apps V1 types
 	for _, appsV1Type := range appsV1Types {
-		r.Methods("GET").
-			Path(fmt.Sprintf("/appsv1/{namespace}/%s", appsV1Type)).
-			HandlerFunc(registerListAppsV1Handlers(ctx, client, appsV1Type))
 
-		r.Methods("GET").
-			Path(fmt.Sprintf("/appsv1/{namespace}/%s/{name}", appsV1Type)).
-			HandlerFunc(registerGetAppsV1Handlers(ctx, client, appsV1Type))
+		func(t string, router *mux.Router) {
+			router.Methods("GET").
+				Path(fmt.Sprintf("/appsv1/{namespace}/%s", t)).
+				HandlerFunc(registerListAppsV1Handlers(ctx, client, t))
+
+			router.Methods("GET").
+				Path(fmt.Sprintf("/appsv1/{namespace}/%s/{name}", t)).
+				HandlerFunc(registerGetAppsV1Handlers(ctx, client, t))
+
+			router.Path(fmt.Sprintf("/watch/appsv1/{namespace}/%s", t)).
+				HandlerFunc(registerWatchAppsV1Handlers(ctx, client, t))
+		}(appsV1Type, r)
+
 	}
 
 	return r

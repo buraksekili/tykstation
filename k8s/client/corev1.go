@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 )
 
 func (c *Client) GetCoreV1(ctx context.Context, namespace, name, resource string, opts metav1.GetOptions) (interface{}, error) {
@@ -72,6 +73,42 @@ func (c *Client) ListCoreV1(ctx context.Context, namespace, resource string, lis
 		return c.ClientSet.CoreV1().ReplicationControllers(namespace).List(ctx, listOptions)
 	case "serviceaccounts":
 		return c.ClientSet.CoreV1().ServiceAccounts(namespace).List(ctx, listOptions)
+	default:
+		return nil, errors.New("invalid operation provided")
+	}
+
+}
+
+func (c *Client) WatchCoreV1(ctx context.Context, ns, v1Type string, opts metav1.ListOptions) (watch.Interface, error) {
+	if c.ClientSet == nil {
+		return nil, nil
+	}
+
+	switch v1Type {
+	case "pods":
+		return c.ClientSet.CoreV1().Pods(ns).Watch(ctx, opts)
+	case "services":
+		return c.ClientSet.CoreV1().Services(ns).Watch(ctx, opts)
+	case "secrets":
+		return c.ClientSet.CoreV1().Secrets(ns).Watch(ctx, opts)
+	case "configmaps":
+		return c.ClientSet.CoreV1().ConfigMaps(ns).Watch(ctx, opts)
+	case "endpoints":
+		return c.ClientSet.CoreV1().Endpoints(ns).Watch(ctx, opts)
+	case "events":
+		return c.ClientSet.CoreV1().Events(ns).Watch(ctx, opts)
+	case "namespaces":
+		return c.ClientSet.CoreV1().Namespaces().Watch(ctx, opts)
+	case "nodes":
+		return c.ClientSet.CoreV1().Nodes().Watch(ctx, opts)
+	case "pvcs":
+		return c.ClientSet.CoreV1().PersistentVolumeClaims(ns).Watch(ctx, opts)
+	case "pvs":
+		return c.ClientSet.CoreV1().PersistentVolumes().Watch(ctx, opts)
+	case "replicacontrollers":
+		return c.ClientSet.CoreV1().ReplicationControllers(ns).Watch(ctx, opts)
+	case "serviceaccounts":
+		return c.ClientSet.CoreV1().ServiceAccounts(ns).Watch(ctx, opts)
 	default:
 		return nil, errors.New("invalid operation provided")
 	}
