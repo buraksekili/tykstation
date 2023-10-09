@@ -26,6 +26,10 @@ func MakeHTTPHandler(ctx context.Context, client *client.Client) http.Handler {
 		Path("/crs/{group}/{version}/{resource}/{namespace}/{name}").
 		HandlerFunc(registerGetCRHandler(ctx, client))
 
+	r.Methods("GET").
+		Path("/crs/{group}/{version}/{resource}/{namespace}").
+		HandlerFunc(registerGetCRsHandler(ctx, client))
+
 	// Core V1 types
 	for _, coreV1Type := range coreV1Types {
 		func(t string, router *mux.Router) {

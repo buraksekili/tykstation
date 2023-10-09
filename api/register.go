@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"net/http"
 )
 
@@ -46,9 +47,47 @@ func registerGetCRHandler(ctx context.Context, c *client.Client) func(http.Respo
 			return
 		}
 
-		crs, err := c.GetCR(ctx, ns, name, group, version, resource)
+		crs, err := c.GetCR(ctx, ns, name, schema.GroupVersionResource{Group: group, Version: version, Resource: resource})
 		if err != nil {
 			errorHandler(w, err)
+			return
+		}
+
+		json.NewEncoder(w).Encode(crs)
+	}
+}
+
+func registerGetCRsHandler(ctx context.Context, c *client.Client) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		group, ok := vars["group"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+			return
+		}
+
+		version, ok := vars["version"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+			return
+		}
+
+		resource, ok := vars["resource"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+			return
+		}
+
+		ns, ok := vars["namespace"]
+		if !ok {
+			errorHandler(w, errors.New("invalid request path"))
+			return
+		}
+
+		crs, err := c.GetCRs(ctx, ns, schema.GroupVersionResource{Group: group, Version: version, Resource: resource})
+		if err != nil {
+			errorHandler(w, err)
+			return
 		}
 
 		json.NewEncoder(w).Encode(crs)

@@ -18,15 +18,9 @@ func (c *Client) GetCRDs(ctx context.Context) (interface{}, error) {
 	return crds, err
 }
 
-func (c *Client) GetCR(ctx context.Context, ns, name, group, version, resource string) (interface{}, error) {
+func (c *Client) GetCR(ctx context.Context, ns, name string, gvr schema.GroupVersionResource) (interface{}, error) {
 	if c.clientSet == nil {
 		return nil, nil
-	}
-
-	var gvr = schema.GroupVersionResource{
-		Group:    group,
-		Version:  version,
-		Resource: resource,
 	}
 
 	cr, err := c.dynamicClient.Resource(gvr).Namespace(ns).Get(ctx, name, metav1.GetOptions{})
@@ -35,4 +29,17 @@ func (c *Client) GetCR(ctx context.Context, ns, name, group, version, resource s
 	}
 
 	return cr, nil
+}
+
+func (c *Client) GetCRs(ctx context.Context, ns string, gvr schema.GroupVersionResource) (interface{}, error) {
+	if c.clientSet == nil {
+		return nil, nil
+	}
+
+	crs, err := c.dynamicClient.Resource(gvr).Namespace(ns).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return crs, nil
 }
