@@ -12,6 +12,28 @@ import (
 	"net/http"
 )
 
+func registerCRsHandler(ctx context.Context, c *client.Client) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		crds, err := c.GetCRs(ctx, "default", "httpbin", "", "", "")
+		if err != nil {
+			errorHandler(w, err)
+		}
+
+		json.NewEncoder(w).Encode(crds)
+	}
+}
+
+func registerCRDsHandler(ctx context.Context, c *client.Client) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		crds, err := c.GetCRDs(ctx, "")
+		if err != nil {
+			errorHandler(w, err)
+		}
+
+		json.NewEncoder(w).Encode(crds)
+	}
+}
+
 func registerGetAppsV1Handlers(ctx context.Context, cl *client.Client, appsV1Type string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)

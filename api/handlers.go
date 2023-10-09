@@ -23,6 +23,9 @@ func MakeHTTPHandler(ctx context.Context, client *client.Client) http.Handler {
 		Path("/logs/{namespace}/{name}").
 		HandlerFunc(logsHandler(ctx, client))
 
+	r.Methods("GET").Path("/crds").HandlerFunc(registerCRDsHandler(ctx, client))
+	r.Methods("GET").Path("/crs").HandlerFunc(registerCRsHandler(ctx, client))
+
 	// Core V1 types
 	for _, coreV1Type := range coreV1Types {
 		func(t string, router *mux.Router) {
@@ -42,7 +45,6 @@ func MakeHTTPHandler(ctx context.Context, client *client.Client) http.Handler {
 
 	// Apps V1 types
 	for _, appsV1Type := range appsV1Types {
-
 		func(t string, router *mux.Router) {
 			router.Methods("GET").
 				Path(fmt.Sprintf("/appsv1/{namespace}/%s", t)).
@@ -55,7 +57,6 @@ func MakeHTTPHandler(ctx context.Context, client *client.Client) http.Handler {
 			router.Path(fmt.Sprintf("/watch/appsv1/{namespace}/%s", t)).
 				HandlerFunc(registerWatchAppsV1Handlers(ctx, client, t))
 		}(appsV1Type, r)
-
 	}
 
 	return r

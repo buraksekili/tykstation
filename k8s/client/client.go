@@ -2,6 +2,8 @@ package client
 
 import (
 	"fmt"
+	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -11,7 +13,9 @@ type Client struct {
 	kubeconfig string
 	restConfig *rest.Config
 
-	ClientSet *kubernetes.Clientset
+	ClientSet     *kubernetes.Clientset
+	crdClientSet  *clientset.Clientset
+	dynamicClient *dynamic.DynamicClient
 }
 
 // K8sClient returns a new Client to interact with Kubernetes, based on the provided kubeconfig.
@@ -40,7 +44,19 @@ func K8sClient(kubeconfig string) (*Client, error) {
 		return nil, err
 	}
 
+	crdClientSet, err := clientset.NewForConfig(cl.restConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	dynClient, err := dynamic.NewForConfig(cl.restConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	cl.ClientSet = cs
+	cl.crdClientSet = crdClientSet
+	cl.dynamicClient = dynClient
 
 	return cl, nil
 }
