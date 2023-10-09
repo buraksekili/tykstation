@@ -12,7 +12,8 @@ import (
 	"net/http"
 )
 
-func registerCRsHandler(ctx context.Context, c *client.Client) func(http.ResponseWriter, *http.Request) {
+// Custom Resource Definition Handlers
+func registerGetCRHandler(ctx context.Context, c *client.Client) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		group, ok := vars["group"]
@@ -45,7 +46,7 @@ func registerCRsHandler(ctx context.Context, c *client.Client) func(http.Respons
 			return
 		}
 
-		crs, err := c.GetCRs(ctx, ns, name, group, version, resource)
+		crs, err := c.GetCR(ctx, ns, name, group, version, resource)
 		if err != nil {
 			errorHandler(w, err)
 		}
@@ -65,6 +66,7 @@ func registerCRDsHandler(ctx context.Context, c *client.Client) func(http.Respon
 	}
 }
 
+// Apps V1 Handlers
 func registerGetAppsV1Handlers(ctx context.Context, cl *client.Client, appsV1Type string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -157,6 +159,7 @@ func registerListAppsV1Handlers(ctx context.Context, cl *client.Client, resource
 	}
 }
 
+// Core V1 handlers.
 func registerGetCoreV1Handlers(ctx context.Context, cl *client.Client, coreV1Type string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
