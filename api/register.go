@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/buraksekili/tykstation/k8s/client"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"net/http"
 )
 
 // Custom Resource Definition Handlers
@@ -78,13 +79,7 @@ func registerGetCRsHandler(ctx context.Context, c *client.Client) func(http.Resp
 			return
 		}
 
-		ns, ok := vars["namespace"]
-		if !ok {
-			errorHandler(w, errors.New("invalid request path"))
-			return
-		}
-
-		crs, err := c.GetCRs(ctx, ns, schema.GroupVersionResource{Group: group, Version: version, Resource: resource})
+		crs, err := c.GetCRs(ctx, schema.GroupVersionResource{Group: group, Version: version, Resource: resource})
 		if err != nil {
 			errorHandler(w, err)
 			return

@@ -47,12 +47,12 @@ func (c *Client) GetCR(ctx context.Context, ns, name string, gvr schema.GroupVer
 	return cr, nil
 }
 
-func (c *Client) GetCRs(ctx context.Context, ns string, gvr schema.GroupVersionResource) (interface{}, error) {
+func (c *Client) GetCRs(ctx context.Context, gvr schema.GroupVersionResource) (interface{}, error) {
 	if c.clientSet == nil {
 		return nil, nil
 	}
 
-	crs, err := c.dynamicClient.Resource(gvr).Namespace(ns).List(ctx, metav1.ListOptions{})
+	crs, err := c.dynamicClient.Resource(gvr).Namespace("").List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/buraksekili/tykstation/k8s/client"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"helm.sh/helm/v3/pkg/time"
 	"net/http"
@@ -32,7 +33,7 @@ func MakeHTTPHandler(ctx context.Context, client *client.Client) http.Handler {
 		HandlerFunc(registerGetCRHandler(ctx, client))
 
 	r.Methods("GET").
-		Path("/crs/{group}/{version}/{resource}/{namespace}").
+		Path("/crs/{group}/{version}/{resource}").
 		HandlerFunc(registerGetCRsHandler(ctx, client))
 
 	// Core V1 types
@@ -68,7 +69,7 @@ func MakeHTTPHandler(ctx context.Context, client *client.Client) http.Handler {
 		}(appsV1Type, r)
 	}
 
-	return r
+	return handlers.CORS()(r)
 }
 
 func logsHandler(ctx context.Context, client *client.Client) func(http.ResponseWriter, *http.Request) {
